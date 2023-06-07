@@ -1,41 +1,4 @@
-// import React, {useRef, useState, useEffect} from 'react';
-// import rewind from '@mapbox/geojson-rewind';
-// import centroid from '@turf/centroid'
-// import WorldMap from './WorldMap';
 
-// export default function App() {
-//   const [geoJson, setGeoJson] = React.useState(null);
-//   const [error, setError] = React.useState(null);
-
-
-//     fetch("http://localhost:8080/country/getCountryData?id=world")
-//       .then(response => response.json())
-//       .then(data => setGeoJson(rewind(data)))
-//       .catch(() => { setError("500 Internal Server Error") });
-
-//   function handleChange(event) {
-//     // if (geoJson && geoJson.features.length > 0) {
-//     //   console.log(centroid(geoJson.features[0]));
-//     //   const center = centroid(geoJson.features[0]).geometry.coordinates;
-//     //   mapRef.current.flyTo({
-//     //     center: center,
-//     //     zoom: 3,
-//     //   });
-//     // }
-//   }
-
-
-
-//   return (
-//     <div>
-//       {error ? <div className='error'><p>{error}</p></div> : null}
-//       {geoJson ? <WorldMap
-//         geoJson={geoJson}
-//         handleChange={handleChange}
-//       /> : null}
-//     </div>
-//   );
-// }
 
 import React, { useRef, useEffect, useState } from 'react';
 import mapboxgl from '!mapbox-gl'; // eslint-disable-line import/no-webpack-loader-syntax
