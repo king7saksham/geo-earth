@@ -26,7 +26,7 @@ code {
 }
 
 .map-container {
-  height: 600px;
+  height: 100vh;
 }
 
 .sidebar {
@@ -36,8 +36,16 @@ code {
   font-family: monospace;
   z-index: 1;
   position: absolute;
-  top: 0;
-  left: 0;
+  bottom: 0;
+  right: 0;
   margin: 12px;
   border-radius: 4px;
+}
+
+.mapboxgl-ctrl-logo {
+  display: none !important;
+}
+
+.mapboxgl-ctrl-bottom-right {
+  display: none !important;
 }
