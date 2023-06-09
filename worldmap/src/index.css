@@ -42,6 +42,42 @@ code {
   border-radius: 4px;
 }
 
+.side-button {
+  background-color: rgba(35, 55, 75, 0.9);
+  color: #fff;
+  font-family: monospace;
+  font-size: small;
+  border-radius: 4px;
+}
+
+.map-layer {
+  position: absolute;
+  z-index: 1;
+}
+
+.population {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  height: 7vh;
+  background-color: rgba(35, 55, 75, 0.9);
+  color: #fff;
+  padding: 0 12px 6px 12px;
+  font-family: monospace;
+  font-size: 17px;
+  z-index: 1;
+  position: absolute;
+  bottom: 0;
+  margin: 12px;
+  border-radius: 4px;
+}
+
+.active {
+  background-color: #fff;
+  color: rgba(35, 55, 75, 0.9);;
+}
+
 .mapboxgl-ctrl-logo {
   display: none !important;
 }
