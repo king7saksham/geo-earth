@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useSpring, animated } from 'react-spring';
 import mapboxgl from 'mapbox-gl';
+import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
 
 mapboxgl.accessToken = 'pk.eyJ1Ijoia2luZzdzYWtzaGFtIiwiYSI6ImNsaTlqZ2hwdjBhZzMzZnBxbnpoNWFvOGwifQ.T509KpjVbALKdWH26tuhUQ';
@@ -69,22 +70,38 @@ export default function App() {
 
         }
       });
+    } else {
+      fetch('http://localhost:8080/country/getCountryData?id=world')
+        .then(response => response.json())
+        .then(data => setGeoJson(data))
     }
   }, [geoJson, selectedOpacity, unselectedOpacity]);
 
   useEffect(() => {
     if (!map.current) return;
     map.current.on('load', () => {
-      fetch('http://localhost:8080/country/getCountryData?id=world')
-        .then(response => response.json())
-        .then(data => setGeoJson(data))
-
       map.current.on('move', () => {
         setLng(map.current.getCenter().lng.toFixed(4));
         setLat(map.current.getCenter().lat.toFixed(4));
         setZoom(map.current.getZoom().toFixed(2));
       });
 
+      const geocoder = new MapboxGeocoder({
+        accessToken: mapboxgl.accessToken,
+        types: 'country',
+        marker: false,
+        mapboxgl: mapboxgl
+      });
+
+      geocoder.on('result', (result) => {
+        const coordinates = result.result.center;
+        map.current.once('moveend', function () {
+          const point = map.current.project(coordinates);
+          map.current.fire('click', { lngLat: coordinates, point, originalEvent: {} });
+        });
+      });
+
+      map.current.addControl(geocoder);
       map.current.addControl(new mapboxgl.NavigationControl());
     });
   });
@@ -100,10 +117,6 @@ export default function App() {
     });
   });
 
-  function handleButtonClick(e) {
-    console.log(e);
-  }
-
   return (
     <div>
       <div className="sidebar">
@@ -114,20 +127,6 @@ export default function App() {
         <animated.div>
           {props.val.to(val => Math.floor(val))}
         </animated.div>
-      </div>
-      <div onClick={handleButtonClick} className='map-layer'>
-        <div className='layer-switch'>
-          <button id="streets" className="side-button active">Streets</button>
-          <button className="side-button">Satellite Streets</button>
-          <button className="side-button">Outdoors</button>
-          <button className="side-button">Light</button>
-          <button className="side-button">Dark</button>
-          <button className="side-button">OSM</button>
-        </div>
-        <div className='projection-switch'>
-          <button className="side-button active">Globe</button>
-          <button className="side-button">Mercator</button>
-        </div>
       </div>
       <div ref={mapContainer} className="map-container" />
     </div>
