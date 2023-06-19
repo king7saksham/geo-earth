@@ -115,7 +115,6 @@ function App() {
 
           map.current.on('contextmenu', id, (e) => {
             const properties = e.features[0].properties;
-            console.log(properties)
             if (activePopup.current) {
               activePopup.current.remove();
             }
