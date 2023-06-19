@@ -16,7 +16,6 @@ public class CountryController {
     private CountryDataService countryDataService;
 
     @CrossOrigin(origins = "http://localhost:3000")
-    //@CrossOrigin(origins = "https://geo-earth.netlify.app")
     @GetMapping(value = "/getCountryData", produces = "application/JSON")
     public ResponseEntity<JSONObject> getCountryData(
             @RequestParam String id
