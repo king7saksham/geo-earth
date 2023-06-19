@@ -13,7 +13,7 @@ public class CountryRepository extends BaseAdapter {
     public JSONObject getCountry(String id) {
         String field = convert(id);
 
-        String sql = "SELECT ST_AsGeoJSON(geometry) geometry, country name, ST_Area(geometry) area, population_population population, density_density density, currency_currency_name currency, capitol_city capital, iso id FROM country_data" + (field.equals("('WORLD')") ? "" : " WHERE iso IN " + field) + ";";
+        String sql = "SELECT ST_AsGeoJSON(geometry) geometry, country name, ST_Area(ST_Transform(geometry, 26986))/10763910.41671 area, population, density, currency, capital, flag_base64 flag, rank_pop, rank_area, iso id FROM country_data" + (field.equals("('WORLD')") ? "" : " WHERE iso IN " + field) + ";";
 
         List<JSONObject> regions = new ArrayList<>();
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
@@ -33,6 +33,10 @@ public class CountryRepository extends BaseAdapter {
                 properties.put("population", row.get("population"));
                 properties.put("population density", row.get("density"));
                 properties.put("capital", row.get("capital"));
+                properties.put("currency", row.get("currency"));
+                properties.put("flag", row.get("flag"));
+                properties.put("rank_pop", row.get("rank_pop"));
+                properties.put("rank_area", row.get("rank_area"));
                 geometryJson.put("properties", properties);
 
                 regions.add(geometryJson);

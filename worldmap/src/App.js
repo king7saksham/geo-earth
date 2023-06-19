@@ -4,23 +4,77 @@ import mapboxgl from 'mapbox-gl';
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
 
+const FILL_COLOR = 'rgb(253, 92, 99)';
+const FILL_OPACITY_SELECTED = 0.4;
+const FILL_OPACITY_UNSELECTED = 0.001;
+const ANIMATION_DURATION = 300;
+
 mapboxgl.accessToken = 'pk.eyJ1Ijoia2luZzdzYWtzaGFtIiwiYSI6ImNsaTlqZ2hwdjBhZzMzZnBxbnpoNWFvOGwifQ.T509KpjVbALKdWH26tuhUQ';
 
-export default function App() {
+function App() {
   const mapContainer = useRef(null);
   const map = useRef(null);
-  const [lng, setLng] = useState(0);
-  const [lat, setLat] = useState(0);
+  const [lng, setLng] = useState(76);
+  const [lat, setLat] = useState(25);
   const [zoom, setZoom] = useState(2);
-  const [geoJson, setGeoJson] = useState(null);
-  const [population, setPopulation] = useState(0);
-  const [selectedOpacity, unselectedOpacity] = [0.4, 0.001];
-  const props = useSpring({ val: population, from: { val: 0 }, config: { duration: "300" } });
+  const [countryData, setCountryData] = useState(null);
+  const [selectedCountry, setSelectedCountry] = useState(null);
+  const populationProps = useSpring({ val: selectedCountry?.population || 0, from: { val: 0 }, config: { duration: ANIMATION_DURATION } });
+  const areaProps = useSpring({ val: selectedCountry?.area || 0, from: { val: 0.0 }, config: { duration: ANIMATION_DURATION } });
+  let activePopup = null;
 
   useEffect(() => {
-    if (geoJson) {
-      geoJson.features.forEach(country => {
+    if (!countryData) {
+      fetch('http://localhost:8080/country/getCountryData?id=world')
+        .then(response => response.json())
+        .then(data => setCountryData(data))
+        .catch(error => {
+          alert("Unable to connect to the server.");
+        });
+    }
+  }, [countryData]);
+
+  useEffect(() => {
+    if (!map.current) return;
+
+    const handleMove = () => {
+      setLng(map.current.getCenter().lng.toFixed(4));
+      setLat(map.current.getCenter().lat.toFixed(4));
+      setZoom(map.current.getZoom().toFixed(2));
+    };
+
+    map.current.on('load', () => {
+      map.current.on('move', handleMove);
+
+      const geocoder = new MapboxGeocoder({
+        accessToken: mapboxgl.accessToken,
+        types: 'country',
+        marker: false,
+        mapboxgl: mapboxgl
+      });
+
+      geocoder.on('result', (result) => {
+        const coordinates = result.result.center;
+        map.current.once('moveend', function () {
+          const point = map.current.project(coordinates);
+          map.current.fire('click', { lngLat: coordinates, point, originalEvent: {} }).fire('contextmenu', { lngLat: coordinates, point, originalEvent: {} });
+        });
+      });
+
+      map.current.addControl(geocoder);
+      map.current.addControl(new mapboxgl.NavigationControl());
+    });
+
+    return () => {
+      map.current.off('move', handleMove);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (countryData) {
+      countryData.features.forEach(country => {
         const id = country.properties.name;
+
         if (!map.current.getSource(id)) {
           map.current.addSource(id, {
             'type': 'geojson',
@@ -32,31 +86,51 @@ export default function App() {
             'type': 'fill',
             'source': id,
             'paint': {
-              'fill-color': 'rgb(253, 92, 99)',
-              'fill-opacity': unselectedOpacity,
-              'fill-outline-color': 'rgba(253, 92, 99, 1)'
+              'fill-color': FILL_COLOR,
+              'fill-opacity': FILL_OPACITY_UNSELECTED,
+              'fill-outline-color': FILL_COLOR
             }
           });
 
           map.current.on('click', id, () => {
-            const opacity = map.current.getPaintProperty(
-              id,
-              'fill-opacity'
-            );
+            const opacity = map.current.getPaintProperty(id, 'fill-opacity');
+            const { population, area } = country.properties;
 
-            if (opacity === unselectedOpacity) {
-              map.current.setPaintProperty(id, 'fill-opacity', selectedOpacity);
-              setPopulation(prevPopulation => (prevPopulation + Number(country.properties.population)));
+            if (opacity === FILL_OPACITY_UNSELECTED) {
+              map.current.setPaintProperty(id, 'fill-opacity', FILL_OPACITY_SELECTED);
+              setSelectedCountry(prevCountry => ({
+                ...prevCountry,
+                population: (prevCountry?.population || 0) + population,
+                area: (prevCountry?.area || 0) + Math.floor(area)
+              }));
             } else {
-              map.current.setPaintProperty(id, 'fill-opacity', unselectedOpacity);
-              setPopulation(prevPopulation => (prevPopulation - Number(country.properties.population)));
+              map.current.setPaintProperty(id, 'fill-opacity', FILL_OPACITY_UNSELECTED);
+              setSelectedCountry(prevCountry => ({
+                ...prevCountry,
+                population: (prevCountry?.population || 0) - population,
+                area: (prevCountry?.area || 0) - Math.floor(area)
+              }));
             }
           });
 
           map.current.on('contextmenu', id, (e) => {
-            new mapboxgl.Popup()
+            const properties = e.features[0].properties;
+            if (activePopup) {
+              activePopup.remove();
+            }
+
+            activePopup = new mapboxgl.Popup({ closeButton: false })
               .setLngLat(e.lngLat)
-              .setHTML(e.features[0].properties.name)
+              .setHTML(`
+                  <img src="${!properties.flag || properties.flag === "" ? "unknown_flag.png" : properties.flag}">
+                  <p>#${properties.rank_pop} in Population</p>
+                  <p>#${properties.rank_area} in Area</p>
+                  <p>Name: ${properties.name}</p>
+                  <p>Capital: ${!properties.capital || properties.capital === "null" ? "N/A" : properties.capital}</p>
+                  <p>Currency: ${properties.currency || "N/A"}</p>
+                  <p>Population: ${properties.population || "N/A"}</p>
+                  <p>Area: ${Math.floor(properties.area)} sqkm</p>
+              `)
               .addTo(map.current);
           });
 
@@ -70,65 +144,74 @@ export default function App() {
 
         }
       });
-    } else {
-      fetch('http://localhost:8080/country/getCountryData?id=world')
-        .then(response => response.json())
-        .then(data => setGeoJson(data))
     }
-  }, [geoJson, selectedOpacity, unselectedOpacity]);
+  }, [countryData]);
 
   useEffect(() => {
-    if (!map.current) return;
-    map.current.on('load', () => {
-      map.current.on('move', () => {
-        setLng(map.current.getCenter().lng.toFixed(4));
-        setLat(map.current.getCenter().lat.toFixed(4));
-        setZoom(map.current.getZoom().toFixed(2));
+    if (!map.current) {
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/streets-v12',
+        projection: 'globe',
+        center: [lng, lat],
+        zoom: zoom
       });
+    }
+  }, []);
 
-      const geocoder = new MapboxGeocoder({
-        accessToken: mapboxgl.accessToken,
-        types: 'country',
-        marker: false,
-        mapboxgl: mapboxgl
-      });
 
-      geocoder.on('result', (result) => {
-        const coordinates = result.result.center;
-        map.current.once('moveend', function () {
-          const point = map.current.project(coordinates);
-          map.current.fire('click', { lngLat: coordinates, point, originalEvent: {} });
-        });
-      });
+  const handleSelectAll = () => {
+    if (countryData) {
+      countryData.features.forEach(country => {
+        const id = country.properties.name;
+        const opacity = map.current.getPaintProperty(id, 'fill-opacity');
+        const { population, area } = country.properties;
+        if (opacity === FILL_OPACITY_UNSELECTED) {
+          map.current.setPaintProperty(id, 'fill-opacity', FILL_OPACITY_SELECTED);
+          setSelectedCountry(prevCountry => ({
+            ...prevCountry,
+            population: (prevCountry?.population || 0) + population,
+            area: (prevCountry?.area || 0) + Math.floor(area)
+          }));
+        }
+      })
+    }
+  };
 
-      map.current.addControl(geocoder);
-      map.current.addControl(new mapboxgl.NavigationControl());
-    });
-  });
-
-  useEffect(() => {
-    if (map.current) return;
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/streets-v12',
-      projection: 'globe',
-      center: [lng, lat],
-      zoom: zoom
-    });
-  });
+  function handleClearAll() {
+    if (countryData) {
+      countryData.features.forEach(country => {
+        const id = country.properties.name;
+        const opacity = map.current.getPaintProperty(id, 'fill-opacity');
+        const { population, area } = country.properties;
+        if (opacity === FILL_OPACITY_SELECTED) {
+          map.current.setPaintProperty(id, 'fill-opacity', FILL_OPACITY_UNSELECTED);
+          setSelectedCountry(prevCountry => ({
+            ...prevCountry,
+            population: (prevCountry?.population || 0) - population,
+            area: (prevCountry?.area || 0) - Math.floor(area)
+          }));
+        }
+      })
+    }
+  }
 
   return (
     <div>
       <div className="sidebar">
         Longitude: {lng} | Latitude: {lat} | Zoom: {zoom}
       </div>
-      <div className="population">
-        Total Population
-        <animated.div>
-          {props.val.to(val => Math.floor(val))}
-        </animated.div>
+      <div className="total-counter">
+        <div className="counter">Total Population <animated.div>{populationProps.val.to(val => Math.floor(val))}</animated.div></div>
+        <div className="counter">Total Area <animated.div>{areaProps.val.to(val => `${Math.floor(val)} sqkm`)}</animated.div></div>
+      </div>
+      <div className="all-buttons">
+        <button className="side-button" onClick={handleSelectAll}>Select All</button>
+        <button className="side-button" onClick={handleClearAll}>Clear All</button>
       </div>
       <div ref={mapContainer} className="map-container" />
     </div>
   );
 }
+
+export default App;
