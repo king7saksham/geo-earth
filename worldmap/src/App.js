@@ -4,6 +4,8 @@ import mapboxgl from 'mapbox-gl';
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
 
+mapboxgl.workerClass = require("worker-loader!mapbox-gl/dist/mapbox-gl-csp-worker").default;
+
 const FILL_COLOR = 'rgb(253, 92, 99)';
 const FILL_OPACITY_SELECTED = 0.4;
 const FILL_OPACITY_UNSELECTED = 0.001;
