@@ -115,6 +115,7 @@ function App() {
 
           map.current.on('contextmenu', id, (e) => {
             const properties = e.features[0].properties;
+            console.log(properties)
             if (activePopup.current) {
               activePopup.current.remove();
             }
@@ -122,7 +123,7 @@ function App() {
             activePopup.current = new mapboxgl.Popup({ closeButton: false })
               .setLngLat(e.lngLat)
               .setHTML(`
-                  <img src="${!properties.flag || properties.flag === "" ? "unknown_flag.png" : properties.flag}">
+                  <img src="${properties.flag}" alt="${properties.name}" onerror="this.src='unknown_flag.png'">
                   <p>#${properties.rank_pop} in Population</p>
                   <p>#${properties.rank_area} in Area</p>
                   <p>Name: ${properties.name}</p>

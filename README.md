@@ -30,7 +30,9 @@ Make sure you have the following software installed on your machine:
 
 - Node.js (version 18.16.10 or higher)
 - npm (version 8.19.4 or higher)
-- Java Development Kit (JDK) (version 11 or higher)
+- Java Development Kit (JDK) (version 20 or higher)
+- Maven (version 3.9.2 or higher)
+- Spring Boot CLI (version 3.1.0 or higher)
 
 You can download Node.js and npm from the official Node.js website: https://nodejs.org
 
@@ -91,5 +93,7 @@ This project is licensed under the [MIT](https://choosealicense.com/licenses/mit
 ## Acknowledgements
 - [React](https://react.dev/)
 - [Mapbox GL JS](https://docs.mapbox.com/mapbox-gl-js/api/)
+- [Maven](https://maven.apache.org/)
 - [Spring Boot](https://spring.io/projects/spring-boot)
 - [PostgreSQL](https://www.postgresql.org/)
+- [PostGIS](https://postgis.net/)
