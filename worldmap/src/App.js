@@ -21,7 +21,7 @@ function App() {
   const [selectedCountry, setSelectedCountry] = useState(null);
   const populationProps = useSpring({ val: selectedCountry?.population || 0, from: { val: 0 }, config: { duration: ANIMATION_DURATION } });
   const areaProps = useSpring({ val: selectedCountry?.area || 0, from: { val: 0.0 }, config: { duration: ANIMATION_DURATION } });
-  let activePopup = null;
+  const activePopup = useRef(null);
 
   useEffect(() => {
     if (!countryData) {
@@ -115,11 +115,11 @@ function App() {
 
           map.current.on('contextmenu', id, (e) => {
             const properties = e.features[0].properties;
-            if (activePopup) {
-              activePopup.remove();
+            if (activePopup.current) {
+              activePopup.current.remove();
             }
 
-            activePopup = new mapboxgl.Popup({ closeButton: false })
+            activePopup.current = new mapboxgl.Popup({ closeButton: false })
               .setLngLat(e.lngLat)
               .setHTML(`
                   <img src="${!properties.flag || properties.flag === "" ? "unknown_flag.png" : properties.flag}">
@@ -157,7 +157,7 @@ function App() {
         zoom: zoom
       });
     }
-  }, []);
+  }, [lat, lng, zoom]);
 
 
   const handleSelectAll = () => {
