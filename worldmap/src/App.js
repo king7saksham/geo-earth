@@ -4,14 +4,12 @@ import mapboxgl from 'mapbox-gl';
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
 
-mapboxgl.workerClass = require("worker-loader!mapbox-gl/dist/mapbox-gl-csp-worker").default;
-
 const FILL_COLOR = 'rgb(253, 92, 99)';
 const FILL_OPACITY_SELECTED = 0.4;
 const FILL_OPACITY_UNSELECTED = 0.001;
 const ANIMATION_DURATION = 300;
 
-mapboxgl.accessToken = 'pk.eyJ1Ijoia2luZzdzYWtzaGFtIiwiYSI6ImNsaTlqZ2hwdjBhZzMzZnBxbnpoNWFvOGwifQ.T509KpjVbALKdWH26tuhUQ';
+mapboxgl.accessToken = process.env.REACT_APP_MAP_TOKEN;
 
 function App() {
   const mapContainer = useRef(null);
@@ -27,7 +25,7 @@ function App() {
 
   useEffect(() => {
     if (!countryData) {
-      fetch('http://localhost:8080/country/getCountryData?id=world')
+      fetch(`${process.env.REACT_APP_SERVER_URL}/country/getCountryData?id=world`)
         .then(response => response.json())
         .then(data => setCountryData(data))
         .catch(error => {
