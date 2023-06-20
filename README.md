@@ -79,10 +79,10 @@ java -jar target/country-0.0.1-SNAPSHOT.jar
 ```
 
 ## Screenshots
-![Screenshot 1](/screenshots/screenshot1.png)
+![Screenshot 1](/screenshots/Screenshot1.png)
 *Select countries by clicking on them*
 
-![Screenshot 2](/screenshots/screenshot2.png)
+![Screenshot 2](/screenshots/Screenshot2.png)
 *Search for specific countries (Right-click to open info card)*
 
 ## Usage
