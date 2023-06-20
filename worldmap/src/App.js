@@ -23,6 +23,7 @@ function App() {
   const areaProps = useSpring({ val: selectedCountry?.area || 0, from: { val: 0.0 }, config: { duration: ANIMATION_DURATION } });
   const activePopup = useRef(null);
 
+  // Fetch country data from the server on initial load
   useEffect(() => {
     if (!countryData) {
       fetch(`${process.env.REACT_APP_SERVER_URL}/country/getCountryData?id=world`)
@@ -34,6 +35,7 @@ function App() {
     }
   }, [countryData]);
 
+  // Initialize and configure the map on component mount
   useEffect(() => {
     if (!map.current) return;
 
@@ -46,6 +48,7 @@ function App() {
     map.current.on('load', () => {
       map.current.on('move', handleMove);
 
+      // Initialize and configure the geocoder
       const geocoder = new MapboxGeocoder({
         accessToken: mapboxgl.accessToken,
         types: 'country',
@@ -53,6 +56,7 @@ function App() {
         mapboxgl: mapboxgl
       });
 
+      // Handle geocoder result and simulate a click event on the map
       geocoder.on('result', (result) => {
         const coordinates = result.result.center;
         map.current.once('moveend', function () {
@@ -61,6 +65,7 @@ function App() {
         });
       });
 
+      // Add geocoder and navigation control to the map
       map.current.addControl(geocoder);
       map.current.addControl(new mapboxgl.NavigationControl());
     });
@@ -70,12 +75,14 @@ function App() {
     };
   }, []);
 
+  // Update the map and handle events when country data is available
   useEffect(() => {
     if (countryData) {
       countryData.features.forEach(country => {
         const id = country.properties.name;
 
         if (!map.current.getSource(id)) {
+          // Add source and layer for each country
           map.current.addSource(id, {
             'type': 'geojson',
             'data': country
@@ -92,6 +99,7 @@ function App() {
             }
           });
 
+          // Add event listeners for each country
           map.current.on('click', id, () => {
             const opacity = map.current.getPaintProperty(id, 'fill-opacity');
             const { population, area } = country.properties;
@@ -119,6 +127,7 @@ function App() {
               activePopup.current.remove();
             }
 
+            // Show popup with country information on right-click
             activePopup.current = new mapboxgl.Popup({ closeButton: false })
               .setLngLat(e.lngLat)
               .setHTML(`
@@ -141,12 +150,12 @@ function App() {
           map.current.on('mouseleave', id, () => {
             map.current.getCanvas().style.cursor = '';
           });
-
         }
       });
     }
   }, [countryData]);
 
+  // Initialize the map on component mount
   useEffect(() => {
     if (!map.current) {
       map.current = new mapboxgl.Map({
@@ -159,7 +168,7 @@ function App() {
     }
   }, [lat, lng, zoom]);
 
-
+  // Handler for selecting all countries
   const handleSelectAll = () => {
     if (countryData) {
       countryData.features.forEach(country => {
@@ -174,11 +183,12 @@ function App() {
             area: (prevCountry?.area || 0) + Math.floor(area)
           }));
         }
-      })
+      });
     }
   };
 
-  function handleClearAll() {
+  // Handler for clearing all selections
+  const handleClearAll = () => {
     if (countryData) {
       countryData.features.forEach(country => {
         const id = country.properties.name;
@@ -192,9 +202,9 @@ function App() {
             area: (prevCountry?.area || 0) - Math.floor(area)
           }));
         }
-      })
+      });
     }
-  }
+  };
 
   return (
     <div>
