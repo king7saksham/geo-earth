@@ -98,6 +98,9 @@ npm start
 This project is licensed under the [MIT](https://choosealicense.com/licenses/mit/) License.
 
 ## Acknowledgements
+
+This project would not have been possible without the contributions of the following technologies and communities:
+
 - [React](https://react.dev/)
 - [Mapbox GL JS](https://docs.mapbox.com/mapbox-gl-js/api/)
 - [Maven](https://maven.apache.org/)
