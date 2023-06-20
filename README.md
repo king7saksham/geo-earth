@@ -78,7 +78,14 @@ mvn clean package
 java -jar target/country-0.0.1-SNAPSHOT.jar
 ```
 
-### Usage
+## Screenshots
+![Screenshot 1](/screenshots/screenshot1.png)
+*Select countries by clicking on them*
+
+![Screenshot 2](/screenshots/screenshot2.png)
+*Search for specific countries (Right-click to open info card)*
+
+## Usage
 
 1. Start the frontend development server:
 
