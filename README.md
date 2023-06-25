@@ -59,7 +59,7 @@ The Java Development Kit (JDK) can be downloaded from the Oracle website or thro
 - Install the dependencies:
 
 ```bash
-npm install
+    npm install
 ```
 
 4. Start the backend server:
@@ -69,13 +69,13 @@ npm install
 - Build the project:
 
 ```bash
-mvn clean package
+    mvn clean package
 ```
 
 - Run the server:
 
 ```bash
-java -jar target/country-0.0.1-SNAPSHOT.jar
+    java -jar target/country-0.0.1-SNAPSHOT.jar
 ```
 
 ## Screenshots
@@ -90,7 +90,7 @@ java -jar target/country-0.0.1-SNAPSHOT.jar
 1. Start the frontend development server:
 
 ```bash
-npm start
+    npm start
 ```
 2. Open your web browser and visit http://localhost:3000 to access the Geo Earth application.
 
