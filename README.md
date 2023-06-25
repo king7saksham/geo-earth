@@ -95,7 +95,7 @@ npm start
 2. Open your web browser and visit http://localhost:3000 to access the Geo Earth application.
 
 ## License
-This project is licensed under the [MIT](https://choosealicense.com/licenses/mit/) License.
+This project is licensed under the [MIT](LICENSE) License.
 
 ## Acknowledgements
 
